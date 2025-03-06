@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/rayman/nimbus-action/internal/logger"
+	"github.com/rayman-tech/nimbus-action/internal/logger"
 )
 
 var log = logger.GetLogger()
