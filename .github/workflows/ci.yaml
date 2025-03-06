@@ -1,54 +1,8 @@
-name: Continuous Integration
+name: Test Action
 
-on: push
-
-permissions:
-  contents: read
+on: [push]
 
 jobs:
-  test-docker:
-    name: Docker Tests
-    runs-on: ubuntu-latest
-
-    # Run a local registry to push to
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5001:5000
-
-    env:
-      TEST_TAG: localhost:5001/rayman-tech/nimbus-action:latest
-
-    steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Docker BuildX
-        id: setup-buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          install: true
-          driver-opts: network=host
-
-      - name: Build the Container
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ env.TEST_TAG }}
-
-      - name: Run the Container
-        id: run
-        env:
-          INPUT_WHO_TO_GREET: Mona Lisa Octocat
-        run: |
-          docker run \
-            --env INPUT_WHO_TO_GREET="${{ env.INPUT_WHO_TO_GREET }}" \
-            --rm ${{ env.TEST_TAG }}
-
   test-action:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
