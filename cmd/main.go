@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 
 	"github.com/rayman/nimbus-action/internal/logger"
 )
@@ -21,5 +22,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Info("File contents: " + string(filecontents))
+	log.Debug("File contents: " + string(filecontents))
+
+	cmd := "echo \"service-urls\"=[] >> $GITHUB_OUTPUT"
+	_, err = exec.Command("sh", "-c", cmd).Output()
+	if err != nil {
+		log.Error("Error writing to github output", "msg", err)
+		os.Exit(1)
+	}
 }
