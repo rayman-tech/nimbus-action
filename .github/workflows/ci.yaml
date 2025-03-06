@@ -17,3 +17,7 @@ jobs:
         uses: ./
         with:
           nimbus-path: nimbus.yaml
+
+      - name: Print Output
+        id: output
+        run: echo "${{ steps.test-action.outputs.service-urls }}"

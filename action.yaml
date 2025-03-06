@@ -5,6 +5,9 @@ inputs:
     description: "Path to the nimbus file."
     required: false
     default: "./nimbus.yaml"
+outputs:
+  service-urls:
+    description: "List of URLs of the services deployed."
 runs:
   using: "docker"
   image: "Dockerfile"
