@@ -1,15 +1,12 @@
 name: "Nimbus Action"
 description: "A CD solution that deploys projects to your self-hosted servers."
 inputs:
-  who-to-greet:
-    description: "Who to greet"
-    required: true
-    default: "World"
-outputs:
-  time:
-    description: "The time we greeted you"
+  nimbus-path:
+    description: "Path to the nimbus file."
+    required: false
+    default: "./nimbus.yaml"
 runs:
   using: "docker"
   image: "Dockerfile"
   args:
-    - ${{ inputs.who-to-greet }}
+    - ${{ inputs.nimbus_path }}

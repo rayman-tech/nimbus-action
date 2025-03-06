@@ -16,7 +16,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          who-to-greet: Mona Lisa Octocat
+          nimbus-path: nimbus.yaml
 
       - name: Print Output
         id: output
