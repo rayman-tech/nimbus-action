@@ -18,7 +18,7 @@ func main() {
 	filecontents, err := os.ReadFile(nimbusfile)
 	if err != nil {
 		log.Error("Error reading file", "msg", err)
-		return
+		os.Exit(1)
 	}
 
 	log.Info("File contents: " + string(filecontents))
