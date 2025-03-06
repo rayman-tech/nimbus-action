@@ -1,0 +1,23 @@
+name: Test Action
+
+on: [push]
+
+jobs:
+  test-action:
+    name: GitHub Actions Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Test Nimbus Action
+        id: test-action
+        uses: ./
+        with:
+          nimbus-path: nimbus.yaml
+
+      - name: Print Output
+        id: output
+        run: echo "${{ steps.test-action.outputs.service-urls }}"

@@ -1,0 +1,17 @@
+app: nimbus-example
+
+services:
+  - name: frontend
+    image: nimbus/nimbus-frontend
+    network:
+      ports:
+        - 80
+
+  - name: backend
+    image: nimbus/nimbus-backend
+    network:
+      ports:
+        - 80
+
+  - name: redis
+    template: redis
