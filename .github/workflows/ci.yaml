@@ -17,9 +17,8 @@ jobs:
         uses: ./
         env:
           NIMBUS_API_KEY: ${{ secrets.NIMBUS_API_KEY }}
-        with:
-          nimbus-server: ${{ secrets.NIMBUS_URL }}
-          nimbus-path: nimbus.yaml
+          NIMBUS_SERVER: ${{ secrets.NIMBUS_URL }}
+          NIMBUS_PATH: nimbus.yaml
 
       - name: Print Output
         id: output
