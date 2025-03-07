@@ -8,7 +8,6 @@ Here's an example of how to use this action in a workflow file:
 
 ```yaml
 name: Nimbus Example
-
 on:
   push:
     branches:
@@ -29,7 +28,10 @@ jobs:
       # rayman-tech/nimbus-action@v0.0.1
       - name: Deploy
         uses: rayman-tech/nimbus-action@main
+        env:
+          NIMBUS_API_KEY: ${{ secrets.NIMBUS_API_KEY }}
         with:
+          nimbus-url: https://nimbus.deguzman.cloud
           nimbus-path: deploy/nimbus.yaml # Optional
       - name: Deploy
         uses: rayman-tech/nimbus-action@main
@@ -41,6 +43,7 @@ jobs:
 
 | Input         | Default       | Description                                    |
 | ------------- | ------------- | ---------------------------------------------- |
+| `nimbus-url`  |     N/A       | The URL of the Nimbus server                   |
 | `nimbus-path` | `nimbus.yaml` | The path to the nimbus file in your repository |
 
 ## Outputs

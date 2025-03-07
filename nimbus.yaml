@@ -1,17 +1,25 @@
-app: nimbus-example
-
+app: nimbus
 services:
   - name: frontend
-    image: nimbus/nimbus-frontend
+    template: http
+    image: matthew10125/boshi-frontend
+    network:
+      ports:
+        - 80
+  - name: backend
+    template: http
+    image: matthew10125/boshi-backend
     network:
       ports:
         - 80
 
-  - name: backend
-    image: nimbus/nimbus-backend
-    network:
-      ports:
-        - 80
+  - name: database
+    template: postgres
+    version: 13.3
+    configs:
+      - path: /etc/configs/default.conf
+        value: |
+          key=value
 
   - name: redis
     template: redis

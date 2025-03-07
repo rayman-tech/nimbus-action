@@ -1,6 +1,12 @@
 name: "Nimbus Action"
 description: "A CD solution that deploys projects to your self-hosted servers."
 inputs:
+  nimbus-server:
+    description: "URL of the Nimbus server."
+    required: true
+  api-key:
+    description: "API key to authenticate with the Nimbus server."
+    required: true
   nimbus-path:
     description: "Path to the nimbus file."
     required: false
