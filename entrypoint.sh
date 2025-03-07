@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-curl --location '${NIMBUS_SERVER}' \
---header 'X-Api-Key: ${NIMBUS_API_KEY}' \
---form 'file=${NIMBUS_PATH}'
+curl --location "${NIMBUS_SERVER}/deploy" \
+--header "X-Api-Key: ${NIMBUS_API_KEY}" \
+--form "file=@${NIMBUS_PATH}"
