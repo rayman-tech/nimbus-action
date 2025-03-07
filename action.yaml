@@ -4,7 +4,7 @@ inputs:
   nimbus-server:
     description: "URL of the Nimbus server."
     required: true
-  nimbus-api-key:
+  api-key:
     description: "API key for the Nimbus server."
     required: true
   nimbus-path:
@@ -18,6 +18,6 @@ runs:
   using: "docker"
   image: "Dockerfile"
   env:
-    NIMBUS_API_KEY: ${{ inputs.nimbus-api-key }}
     NIMBUS_SERVER: ${{ inputs.nimbus-server }}
+    NIMBUS_API_KEY: ${{ inputs.api-key }}
     NIMBUS_PATH: ${{ inputs.nimbus-path }}
