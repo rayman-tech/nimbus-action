@@ -6,7 +6,6 @@ jobs:
   test-action:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         id: checkout
@@ -15,6 +14,12 @@ jobs:
       - name: Test Nimbus Action
         id: test-action
         uses: ./
+        env:
+          FRONTEND_BACKEND_URL: http://example.prayujt.com
+          BACKEND_PG_URL: postgresql://user:password@prayujt.com:35432/db
+          BACKEND_SECRET_KEY: secret
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
         with:
           api-key: ${{ secrets.NIMBUS_API_KEY }}
           nimbus-server: ${{ secrets.NIMBUS_URL }}
