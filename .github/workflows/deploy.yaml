@@ -15,9 +15,6 @@ jobs:
         id: test-action
         uses: ./
         env:
-          FRONTEND_BACKEND_URL: http://example.prayujt.com
-          BACKEND_PG_URL: postgresql://user:password@prayujt.com:35432/db
-          BACKEND_SECRET_KEY: secret
           POSTGRES_USER: user
           POSTGRES_PASSWORD: password
         with:

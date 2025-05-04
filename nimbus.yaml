@@ -1,26 +1,11 @@
-app: nimbus
+app: nimbus-test
 services:
-  - name: frontend
+  - name: http-test
     template: http
-    image: matthew10125/boshi-frontend
-    env:
-      - name: BACKEND_URL
-        value: ${FRONTEND_BACKEND_URL}
+    image: hashicorp/http-echo
     network:
       ports:
-        - 80
-
-  - name: backend
-    template: http
-    image: matthew10125/boshi-backend
-    env:
-      - name: DATABASE_URL
-        value: ${BACKEND_PG_URL}
-      - name: SECRET_KEY
-        value: ${BACKEND_SECRET_KEY}
-    network:
-      ports:
-        - 80
+        - 5678
 
   - name: database
     template: postgres

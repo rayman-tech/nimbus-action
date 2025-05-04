@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-envsubst < "${NIMBUS_PATH}" | curl --location "${NIMBUS_SERVER}/deploy" \
+RESPONSE=$(envsubst < "${NIMBUS_PATH}" | curl --silent --location "${NIMBUS_SERVER}/deploy" \
     --header "X-Api-Key: ${NIMBUS_API_KEY}" \
-    --form "file=@-"
+    --form "file=@-")
 
-echo "service-urls=[]" >> $GITHUB_OUTPUT
+echo "### 🚀 Deployed Service URLs" >> $GITHUB_STEP_SUMMARY
+echo "| Service | URLs |" >> $GITHUB_STEP_SUMMARY
+echo "|---------|------|" >> $GITHUB_STEP_SUMMARY
+
+echo "$RESPONSE" | jq -r '.services | to_entries[] | "| \(.key) | \(.value | join("<br>")) |"' >> $GITHUB_STEP_SUMMARY
