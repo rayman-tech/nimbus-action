@@ -5,7 +5,7 @@ services:
     image: hashicorp/http-echo
     network:
       ports:
-        - 5678
+        - 8080
     args: ["-listen=:8080", "-text=\"Hello from Nimbus!\""]
 
   - name: database
