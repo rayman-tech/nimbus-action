@@ -6,6 +6,7 @@ services:
     network:
       ports:
         - 5678
+    args: ["-listen=:8080", "-text=\"Hello from Nimbus!\""]
 
   - name: database
     template: postgres
