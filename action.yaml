@@ -21,3 +21,6 @@ runs:
     NIMBUS_SERVER: ${{ inputs.nimbus-server }}
     NIMBUS_API_KEY: ${{ inputs.api-key }}
     NIMBUS_PATH: ${{ inputs.nimbus-path }}
+branding:
+  icon: "arrow-right"
+  color: "green"
