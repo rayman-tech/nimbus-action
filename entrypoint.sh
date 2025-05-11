@@ -22,7 +22,7 @@ if [ "$HTTP_STATUS" -ne 200 ]; then
     echo "### ❌ Deployment Failed" >> "$GITHUB_STEP_SUMMARY"
     echo "Status Code: $HTTP_STATUS" >> "$GITHUB_STEP_SUMMARY"
     echo "" >> "$GITHUB_STEP_SUMMARY"
-    echo '```\n'"$HTTP_BODY"'\n```' >> "$GITHUB_STEP_SUMMARY"
+    echo '```'"$HTTP_BODY"'```' >> "$GITHUB_STEP_SUMMARY"
     exit 1
 fi
 
