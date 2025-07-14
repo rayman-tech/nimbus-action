@@ -14,9 +14,6 @@ jobs:
       - name: Test Nimbus Action
         id: test-action
         uses: ./
-        env:
-          POSTGRES_USER: user
-          POSTGRES_PASSWORD: password
         with:
           api-key: ${{ secrets.NIMBUS_API_KEY }}
           nimbus-server: ${{ secrets.NIMBUS_URL }}

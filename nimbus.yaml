@@ -1,6 +1,7 @@
 app: nimbus-test
 services:
   - name: http-test
+    public: true
     template: http
     image: hashicorp/http-echo
     network:
