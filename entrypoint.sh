@@ -7,7 +7,7 @@ BRANCH_NAME="${GITHUB_REF##*/}"
 # Make the request and capture both the body and status code
 HTTP_RESPONSE=$(curl --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
     --header "X-Api-Key: ${NIMBUS_API_KEY}" \
-    --form "file=@<(cat "${NIMBUS_PATH}")" \
+    --form "file=@${NIMBUS_PATH}" \
     --form "branch=${BRANCH_NAME}")
 
 # Extract the body and the status code
