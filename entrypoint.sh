@@ -19,16 +19,27 @@ if [ "$HTTP_STATUS" -ne 200 ]; then
     echo "::error ::Deployment failed with status $HTTP_STATUS"
     echo "::error ::Response body: $HTTP_BODY"
 
-    echo "### ❌ Deployment Failed" >> "$GITHUB_STEP_SUMMARY"
-    echo "Status Code: $HTTP_STATUS" >> "$GITHUB_STEP_SUMMARY"
-    echo "" >> "$GITHUB_STEP_SUMMARY"
-    echo '```'"$HTTP_BODY"'```' >> "$GITHUB_STEP_SUMMARY"
+    {
+        echo "### ❌ Deployment Failed"
+        echo "Status Code: $HTTP_STATUS"
+        echo ""
+        echo '```'"$HTTP_BODY"'```'
+    } >> "$GITHUB_STEP_SUMMARY"
     exit 1
 fi
 
-# Success output
-echo "### 🚀 Deployed Service URLs" >> "$GITHUB_STEP_SUMMARY"
-echo "| Service | URLs |" >> "$GITHUB_STEP_SUMMARY"
-echo "|---------|------|" >> "$GITHUB_STEP_SUMMARY"
+# Determine if any service URLs were returned
+SERVICE_COUNT=$(echo "$HTTP_BODY" | jq -r '[.services[] | length] | add // 0')
 
-echo "$HTTP_BODY" | jq -r '.services | to_entries[] | "| \(.key) | \(.value | join("<br>")) |"' >> "$GITHUB_STEP_SUMMARY"
+if [ "$SERVICE_COUNT" -eq 0 ]; then
+    echo "### ✅ Deployment Successful" >> "$GITHUB_STEP_SUMMARY"
+    exit 0
+fi
+
+# Success output with URLs
+{
+    echo "### 🚀 Deployed Service URLs"
+    echo "| Service | URLs |"
+    echo "|---------|------|"
+    echo "$HTTP_BODY" | jq -r '.services | to_entries[] | "| \(.key) | \(.value | join("<br>")) |"'
+} >> "$GITHUB_STEP_SUMMARY"
