@@ -5,9 +5,9 @@ set -euo pipefail
 BRANCH_NAME="${GITHUB_REF##*/}"
 
 # Make the request and capture both the body and status code
-HTTP_RESPONSE=$(envsubst < "${NIMBUS_PATH}" | curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
+HTTP_RESPONSE=$(curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
     --header "X-Api-Key: ${NIMBUS_API_KEY}" \
-    --form "file=@-" \
+    --form "file=@<(cat "${NIMBUS_PATH}")" \
     --form "branch=${BRANCH_NAME}")
 
 # Extract the body and the status code
