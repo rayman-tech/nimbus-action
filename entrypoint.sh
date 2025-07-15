@@ -2,8 +2,17 @@
 
 set -euo pipefail
 
-BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-SANITIZED_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | \
+REF="${GITHUB_REF}"
+if [[ "$REF" == refs/heads/* ]]; then
+    RAW_NAME="${REF#refs/heads/}"
+elif [[ "$REF" == refs/tags/* ]]; then
+    RAW_NAME="${REF#refs/tags/}"
+else
+    echo "::error ::Unsupported GITHUB_REF format: $REF"
+    exit 1
+fi
+
+BRANCH_NAME=$(echo "$RAW_NAME" | tr '[:upper:]' '[:lower:]' | \
   sed -e 's/[\/_ ]/-/g' \
       -e 's/[#!@.]//g')
 
@@ -11,7 +20,7 @@ SANITIZED_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | \
 HTTP_RESPONSE=$(curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
     --header "X-Api-Key: ${NIMBUS_API_KEY}" \
     --form "file=@${NIMBUS_PATH}" \
-    --form "branch=${SANITIZED_BRANCH_NAME}")
+    --form "branch=${BRANCH_NAME}")
 
 # Extract the body and the status code
 HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
