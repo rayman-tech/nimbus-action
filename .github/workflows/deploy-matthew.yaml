@@ -1,0 +1,20 @@
+name: Test Action
+
+on: [push]
+
+jobs:
+  test-action:
+    name: GitHub Actions Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Test Nimbus Action
+        id: test-action-matthew
+        uses: ./
+        with:
+          api-key: ${{ secrets.NIMBUS_API_KEY }}
+          nimbus-server: ${{ secrets.NIMBUS_HOST_MATTHEW }}
+          nimbus-path: nimbus.yaml
