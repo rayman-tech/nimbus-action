@@ -41,5 +41,8 @@ fi
     echo "### 🚀 Deployed Service URLs"
     echo "| Service | URLs |"
     echo "|---------|------|"
-    echo "$HTTP_BODY" | jq -r '.services | to_entries[] | "| \(.key) | \(.value | join("<br>")) |"'
+    echo "$HTTP_BODY" | jq -r '
+        .services | to_entries[] |
+        "| \(.key) | \((.value | if length > 0 then join("<br>") else "No public URL" end)) |"
+    '
 } >> "$GITHUB_STEP_SUMMARY"
