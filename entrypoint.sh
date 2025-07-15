@@ -2,13 +2,16 @@
 
 set -euo pipefail
 
-BRANCH_NAME="${GITHUB_REF##*/}"
+BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+SANITIZED_BRANCH_NAME=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | \
+  sed -e 's/[\/_ ]/-/g' \
+      -e 's/[#!@.]//g')
 
 # Make the request and capture both the body and status code
 HTTP_RESPONSE=$(curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
     --header "X-Api-Key: ${NIMBUS_API_KEY}" \
     --form "file=@${NIMBUS_PATH}" \
-    --form "branch=${BRANCH_NAME}")
+    --form "branch=${SANITIZED_BRANCH_NAME}")
 
 # Extract the body and the status code
 HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
