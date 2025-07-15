@@ -1,4 +1,5 @@
 app: nimbus-test
+allowBranchPreviews: true
 services:
   - name: http-test
     public: true
