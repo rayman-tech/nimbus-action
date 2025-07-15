@@ -12,9 +12,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test Nimbus Action
-        id: test-action
+        id: test-action-prayuj
         uses: ./
         with:
           api-key: ${{ secrets.NIMBUS_API_KEY }}
-          nimbus-server: ${{ secrets.NIMBUS_URL }}
+          nimbus-server: ${{ secrets.NIMBUS_HOST_PRAYUJ }}
           nimbus-path: nimbus.yaml
