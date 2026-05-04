@@ -4,17 +4,13 @@ set -euo pipefail
 
 REF="${GITHUB_REF}"
 if [[ "$REF" == refs/heads/* ]]; then
-    RAW_NAME="${REF#refs/heads/}"
+    BRANCH_NAME="${REF#refs/heads/}"
 elif [[ "$REF" == refs/tags/* ]]; then
-    RAW_NAME="${REF#refs/tags/}"
+    BRANCH_NAME="${REF#refs/tags/}"
 else
     echo "::error ::Unsupported GITHUB_REF format: $REF"
     exit 1
 fi
-
-BRANCH_NAME=$(echo "$RAW_NAME" | tr '[:upper:]' '[:lower:]' | \
-  sed -e 's/[\/_ ]/-/g' \
-      -e 's/[#!@.]//g')
 
 # Make the request and capture both the body and status code
 HTTP_RESPONSE=$(curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
