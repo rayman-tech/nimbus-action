@@ -6,29 +6,71 @@ An action for the Nimbus service that deploys projects to your self-hosted serve
 
 Here's an example of how to use this action in a workflow file:
 
+### Simple (no Docker build)
+
+If your services use pre-built images, a single job handles both deploy and cleanup:
+
 ```yaml
-name: Nimbus Example
+name: Nimbus Deploy
 on:
   push:
-    branches:
-      - main
   delete:
 
 jobs:
-  nimbus-deploy:
-    name: Deploy with Nimbus
+  nimbus:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: rayman-tech/nimbus-action@v2
+        with:
+          api-key: ${{ secrets.NIMBUS_API_KEY }}
+          nimbus-server: ${{ secrets.NIMBUS_URL }}
+          nimbus-path: nimbus.yaml
+```
 
-      # Change @main to a specific commit SHA or version tag, e.g.:
-      # rayman-tech/nimbus-action@e76147da8e5c81eaf017dede5645551d4b94427b
-      # rayman-tech/nimbus-action@v0.0.1
-      - name: Deploy
-        uses: rayman-tech/nimbus-action@main
+### With Docker build
+
+If your workflow builds a Docker image before deploying, split into two jobs so the `delete` event skips the build:
+
+```yaml
+name: Build and Deploy
+on:
+  push:
+  delete:
+
+jobs:
+  build-and-deploy:
+    if: github.event_name != 'delete'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: registry.example.com
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: registry.example.com/my-app:${{ github.sha }}
+
+      - uses: rayman-tech/nimbus-action@v2
+        with:
+          api-key: ${{ secrets.NIMBUS_API_KEY }}
+          nimbus-server: ${{ secrets.NIMBUS_URL }}
+          nimbus-path: nimbus.yaml
+
+  cleanup:
+    if: github.event_name == 'delete'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rayman-tech/nimbus-action@v2
         with:
           api-key: ${{ secrets.NIMBUS_API_KEY }}
           nimbus-server: ${{ secrets.NIMBUS_URL }}
