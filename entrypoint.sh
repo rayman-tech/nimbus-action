@@ -16,7 +16,8 @@ fi
 HTTP_RESPONSE=$(curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
     --header "X-Api-Key: ${NIMBUS_API_KEY}" \
     --form "file=@${NIMBUS_PATH}" \
-    --form "branch=${BRANCH_NAME}")
+    --form "branch=${BRANCH_NAME}" \
+    --form "commit=${GITHUB_SHA}")
 
 # Extract the body and the status code
 HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
