@@ -1,6 +1,6 @@
 name: Test Action
 
-on: [push]
+on: [push, delete]
 
 jobs:
   test-action:

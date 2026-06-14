@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - main
+  delete:
 
 jobs:
   nimbus-deploy:
@@ -33,6 +34,8 @@ jobs:
           nimbus-server: ${{ secrets.NIMBUS_URL }}
           nimbus-path: nimbus.yaml
 ```
+
+Adding the `delete` event enables automatic cleanup of branch preview deployments when branches are deleted (e.g., after merging a PR). Tag deletions are ignored.
 
 ## Inputs
 
