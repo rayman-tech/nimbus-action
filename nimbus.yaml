@@ -9,6 +9,13 @@ services:
       ports:
         - 8080
     args: ["-listen=:8080", "-text=Hello from Nimbus!"]
+    # Custom ingress annotations are merged on top of Nimbus' defaults, so you
+    # can append new ones or override the built-ins (only applied to public
+    # http services).
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/auth-url: "https://idp.prayujt.com/sessions/whoami"
+      nginx.ingress.kubernetes.io/auth-signin: "https://proxy.prayujt.com/oauth2/start?rd=$scheme://$host$request_uri"
 
   - name: database
     template: postgres
