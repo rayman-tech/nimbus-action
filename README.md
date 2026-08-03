@@ -79,6 +79,29 @@ jobs:
 
 Adding the `delete` event enables automatic cleanup of branch preview deployments when branches are deleted (e.g., after merging a PR). Tag deletions are ignored.
 
+## Custom Ingress Annotations
+
+Public `http` services can specify custom nginx ingress annotations via an
+`annotations` map in your `nimbus.yaml`. These are merged on top of Nimbus'
+defaults, so you can both append new annotations and override the built-ins
+(e.g. to wire up external auth):
+
+```yaml
+services:
+  - name: web
+    template: http
+    public: true
+    image: registry.example.com/web:latest
+    network:
+      ports: [8080]
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/auth-url: "https://idp.example.com/sessions/whoami"
+      nginx.ingress.kubernetes.io/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
+```
+
+See the sample [`nimbus.yaml`](./nimbus.yaml) for a full example.
+
 ## Inputs
 
 | Environment       | Default       | Description                                    |
