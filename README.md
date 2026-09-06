@@ -79,12 +79,23 @@ jobs:
 
 Adding the `delete` event enables automatic cleanup of branch preview deployments when branches are deleted (e.g., after merging a PR). Tag deletions are ignored.
 
-## Custom Ingress Annotations
+## Routing with Envoy Gateway
 
-Public `http` services can specify custom nginx ingress annotations via an
-`annotations` map in your `nimbus.yaml`. These are merged on top of Nimbus'
-defaults, so you can both append new annotations and override the built-ins
-(e.g. to wire up external auth):
+The Nimbus server creates Gateway API routes and Envoy policies for public
+`http` services. The action uploads your configuration to Nimbus; it does not
+create Kubernetes resources itself. Existing action inputs, service URL outputs,
+and the `ingress` hostname field remain unchanged.
+
+Configure Envoy Gateway and certificate management on the Nimbus server before
+upgrading it. Services using external authentication or the `spa` feature also
+require the server's `NIMBUS_ROUTE_HELPER_IMAGE` to point to a digest-pinned Nimbus
+image containing the route helper.
+
+For compatibility, the server translates supported legacy NGINX annotations in
+`nimbus.yaml` into Envoy policies. It rejects unsupported NGINX annotations instead
+of silently dropping their behavior. Annotations are not an unrestricted way to
+configure Envoy. For example, this external authentication configuration remains
+supported:
 
 ```yaml
 services:
@@ -100,7 +111,11 @@ services:
       nginx.ingress.kubernetes.io/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
 ```
 
-See the sample [`nimbus.yaml`](./nimbus.yaml) for a full example.
+See the sample [`nimbus.yaml`](./nimbus.yaml) and the
+[Nimbus routing documentation](https://github.com/rayman-tech/nimbus#envoy-gateway-routing)
+for supported options and server prerequisites. Existing deployments migrate when
+redeployed through the updated server; updating this action alone does not migrate
+any routes.
 
 ## Inputs
 
