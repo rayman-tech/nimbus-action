@@ -9,13 +9,13 @@ services:
       ports:
         - 8080
     args: ["-listen=:8080", "-text=Hello from Nimbus!"]
-    # Nimbus translates supported legacy annotations into Envoy policies.
+    # Nimbus translates envoy.nimbus.dev settings into Envoy policies.
     # External auth requires a digest-pinned NIMBUS_ROUTE_HELPER_IMAGE on the server.
-    # Unsupported NGINX annotations are rejected (public http services only).
+    # Unknown Envoy settings are rejected (public http services only).
     annotations:
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/auth-url: "https://idp.example.com/sessions/whoami"
-      nginx.ingress.kubernetes.io/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
+      envoy.nimbus.dev/ssl-redirect: "true"
+      envoy.nimbus.dev/auth-url: "https://idp.example.com/sessions/whoami"
+      envoy.nimbus.dev/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
 
   - name: database
     template: postgres
