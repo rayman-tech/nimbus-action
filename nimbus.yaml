@@ -9,13 +9,13 @@ services:
       ports:
         - 8080
     args: ["-listen=:8080", "-text=Hello from Nimbus!"]
-    # Custom ingress annotations are merged on top of Nimbus' defaults, so you
-    # can append new ones or override the built-ins (only applied to public
-    # http services).
+    # Nimbus translates envoy.nimbus.dev settings into Envoy policies.
+    # External auth requires a digest-pinned NIMBUS_ROUTE_HELPER_IMAGE on the server.
+    # Unknown Envoy settings are rejected (public http services only).
     annotations:
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/auth-url: "https://idp.prayujt.com/sessions/whoami"
-      nginx.ingress.kubernetes.io/auth-signin: "https://proxy.prayujt.com/oauth2/start?rd=$scheme://$host$request_uri"
+      envoy.nimbus.dev/ssl-redirect: "true"
+      envoy.nimbus.dev/auth-url: "https://idp.example.com/sessions/whoami"
+      envoy.nimbus.dev/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
 
   - name: database
     template: postgres

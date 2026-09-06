@@ -79,12 +79,22 @@ jobs:
 
 Adding the `delete` event enables automatic cleanup of branch preview deployments when branches are deleted (e.g., after merging a PR). Tag deletions are ignored.
 
-## Custom Ingress Annotations
+## Routing with Envoy Gateway
 
-Public `http` services can specify custom nginx ingress annotations via an
-`annotations` map in your `nimbus.yaml`. These are merged on top of Nimbus'
-defaults, so you can both append new annotations and override the built-ins
-(e.g. to wire up external auth):
+The Nimbus server creates Gateway API routes and Envoy policies for public
+`http` services. The action uploads your configuration to Nimbus; it does not
+create Kubernetes resources itself. Existing action inputs, service URL outputs,
+and the `ingress` hostname field remain unchanged.
+
+Configure Envoy Gateway and certificate management on the Nimbus server before
+upgrading it. Services using external authentication or the `spa` feature also
+require the server's `NIMBUS_ROUTE_HELPER_IMAGE` to point to a digest-pinned Nimbus
+image containing the route helper.
+
+Use `envoy.nimbus.dev/*` annotations in `nimbus.yaml` to configure Nimbus-generated
+Envoy routes and policies. These are Nimbus settings, not native Envoy Gateway
+annotations. Unsupported settings and conflicts with deprecated NGINX aliases are
+rejected. For example, external authentication:
 
 ```yaml
 services:
@@ -95,12 +105,32 @@ services:
     network:
       ports: [8080]
     annotations:
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-      nginx.ingress.kubernetes.io/auth-url: "https://idp.example.com/sessions/whoami"
-      nginx.ingress.kubernetes.io/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
+      envoy.nimbus.dev/ssl-redirect: "true"
+      envoy.nimbus.dev/auth-url: "https://idp.example.com/sessions/whoami"
+      envoy.nimbus.dev/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
 ```
 
-See the sample [`nimbus.yaml`](./nimbus.yaml) for a full example.
+For gRPC, keep `features: [grpc]` and use explicit Envoy settings:
+
+```yaml
+annotations:
+  envoy.nimbus.dev/backend-protocol: "h2c"
+  envoy.nimbus.dev/connect-timeout: "5s"
+  envoy.nimbus.dev/stream-idle-timeout: "300s"
+  envoy.nimbus.dev/request-timeout: "0s"
+```
+
+Nimbus also supports `grpc-service` / `grpc-method` exact matching and opt-in
+`grpc-retry-count`, `grpc-retry-on`, and `grpc-per-retry-timeout` settings under
+the same prefix. Enable retries only for operations safe to repeat. Backend TLS
+and multiple routing rules are not exposed by this interface. Supported old
+NGINX keys remain deprecated aliases; use explicit Envoy keys for new configuration.
+
+See the sample [`nimbus.yaml`](./nimbus.yaml) and the
+[Nimbus routing documentation](https://github.com/rayman-tech/nimbus#envoy-gateway-routing)
+for supported options and server prerequisites. Existing deployments migrate when
+redeployed through the updated server; updating this action alone does not migrate
+any routes.
 
 ## Inputs
 
