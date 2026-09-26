@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+source "$(dirname "${BASH_SOURCE[0]}")/pr-comment.sh"
+
 if [ "$GITHUB_EVENT_NAME" = "delete" ]; then
     # --- Delete flow: clean up branch preview deployments ---
 
@@ -44,8 +46,26 @@ if [ "$GITHUB_EVENT_NAME" = "delete" ]; then
 else
     # --- Push flow: deploy (existing behavior) ---
 
+    REPORT=$(mktemp)
+    trap 'rm -f "$REPORT"' EXIT
+    publish_report() {
+        cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+        # Keep comment failures independent from the deployment result.
+        set +e
+        post_pr_comment "$REPORT"
+        comment_status=$?
+        set -e
+        if [[ "$comment_status" -ne 0 ]]; then
+            echo '::warning ::Could not update the Nimbus PR comment. Check pull-requests: write permissions.'
+        fi
+    }
+
+    DEPLOY_COMMIT="$GITHUB_SHA"
     REF="${GITHUB_REF}"
-    if [[ "$REF" == refs/heads/* ]]; then
+    if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+        BRANCH_NAME=$(jq -r '.pull_request.head.ref' "$GITHUB_EVENT_PATH")
+        DEPLOY_COMMIT=$(jq -r '.pull_request.head.sha' "$GITHUB_EVENT_PATH")
+    elif [[ "$REF" == refs/heads/* ]]; then
         BRANCH_NAME="${REF#refs/heads/}"
     elif [[ "$REF" == refs/tags/* ]]; then
         BRANCH_NAME="${REF#refs/tags/}"
@@ -58,7 +78,7 @@ else
         --header "X-Api-Key: ${NIMBUS_API_KEY}" \
         --form "file=@${NIMBUS_PATH}" \
         --form "branch=${BRANCH_NAME}" \
-        --form "commit=${GITHUB_SHA}")
+        --form "commit=${DEPLOY_COMMIT}")
 
     HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
     HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
@@ -72,14 +92,16 @@ else
             echo "Status Code: $HTTP_STATUS"
             echo ""
             echo '```'"$HTTP_BODY"'```'
-        } >> "$GITHUB_STEP_SUMMARY"
+        } >> "$REPORT"
+        publish_report
         exit 1
     fi
 
-    SERVICE_COUNT=$(echo "$HTTP_BODY" | jq -r '[.services[] | length] | add // 0')
+    SERVICE_COUNT=$(echo "$HTTP_BODY" | jq -r '.services | length')
 
     if [ "$SERVICE_COUNT" -eq 0 ]; then
-        echo "### ✅ Deployment Successful" >> "$GITHUB_STEP_SUMMARY"
+        echo "### ✅ Deployment Successful" >> "$REPORT"
+        publish_report
         exit 0
     fi
 
@@ -91,5 +113,6 @@ else
             .services | to_entries[] |
             "| \(.key) | \((.value | if length > 0 then join("<br>") else "No public URL" end)) |"
         '
-    } >> "$GITHUB_STEP_SUMMARY"
+    } >> "$REPORT"
+    publish_report
 fi

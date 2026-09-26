@@ -145,3 +145,36 @@ any routes.
 | Input          | Description                                |
 | -------------- | ------------------------------------------ |
 | `service-urls` | List of URLs created from the nimbus file |
+
+## PR deployment comments
+
+The action creates or updates one comment per Nimbus server, config path, and
+branch on matching open PRs. Comments include deployment status, commit, workflow
+link, and public service URLs. Private services are listed without a public URL.
+The Actions summary remains available. Comment failures produce a warning and do
+not change the deployment result; failed deployments still fail the step.
+
+Grant the deployment job permission to comment:
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: write
+```
+
+The new `github-token` input defaults to `${{ github.token }}`. No caller token
+input is needed when using the standard Actions token. Set `pr-comment: 'false'`
+to disable comments. The updater identifies comments authored by
+`github-actions[bot]`; use the standard Actions token for automatic updates.
+
+Push workflows find open PRs for their branch and deployed commit. If the PR is
+opened after the first deployment finishes, the next push or manual workflow
+rerun creates the comment. `pull_request` events are also supported using the
+head branch and head SHA; callers must build and deploy that same head commit.
+Older commits do not replace a newer PR's deployment comment. Branch deletion
+continues to clean up the preview without posting a deployment comment.
+
+After merging a compatible action release, publish a version such as `v2.1.0`
+and move the floating `v2` tag to that commit. Existing `@v2` callers then receive
+the feature, subject to their token permissions. Merging into `main` alone does
+not update the `v2` tag.
