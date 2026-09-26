@@ -11,6 +11,14 @@ inputs:
     description: "Path to the nimbus file."
     required: false
     default: "./nimbus.yaml"
+  github-token:
+    description: "GitHub token for PR deployment comments; requires pull-requests: write."
+    required: false
+    default: ${{ github.token }}
+  pr-comment:
+    description: "Create or update a deployment comment on matching open pull requests."
+    required: false
+    default: "true"
 outputs:
   service-urls:
     description: "List of URLs of the services deployed."
@@ -21,6 +29,8 @@ runs:
     NIMBUS_SERVER: ${{ inputs.nimbus-server }}
     NIMBUS_API_KEY: ${{ inputs.api-key }}
     NIMBUS_PATH: ${{ inputs.nimbus-path }}
+    GH_TOKEN: ${{ inputs.github-token }}
+    PR_COMMENT: ${{ inputs.pr-comment }}
 branding:
   icon: "arrow-right"
   color: "green"
