@@ -4,31 +4,10 @@ services:
   - name: http-test
     public: true
     template: http
-    image: hashicorp/http-echo
+    image: hashicorp/http-echo:1.0.0
     network:
       ports:
         - 8080
     args: ["-listen=:8080", "-text=Hello from Nimbus!"]
-    # Nimbus translates envoy.nimbus.dev settings into Envoy policies.
-    # External auth requires a digest-pinned NIMBUS_ROUTE_HELPER_IMAGE on the server.
-    # Unknown Envoy settings are rejected (public http services only).
     annotations:
       envoy.nimbus.dev/ssl-redirect: "true"
-      envoy.nimbus.dev/auth-url: "https://idp.example.com/sessions/whoami"
-      envoy.nimbus.dev/auth-signin: "https://proxy.example.com/oauth2/start?rd=$scheme://$host$request_uri"
-
-  - name: database
-    template: postgres
-    version: 13.3
-    env:
-      - name: POSTGRES_USER
-        value: ${DATABASE_USER}
-      - name: POSTGRES_PASSWORD
-        value: ${DATABASE_PASSWORD}
-    configs:
-      - path: /etc/configs/default.conf
-        value: |
-          key=value
-
-  - name: redis
-    template: redis

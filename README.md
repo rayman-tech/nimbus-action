@@ -8,7 +8,10 @@ Here's an example of how to use this action in a workflow file:
 
 ### Simple (no Docker build)
 
-If your services use pre-built images, a single job handles both deploy and cleanup:
+If your services use pre-built images, set `tag-images: 'false'` to preserve the
+tags or digests in your manifest. Otherwise Nimbus replaces image tags with the
+commit SHA, which requires images built and published under that SHA. A single job
+handles both deploy and cleanup:
 
 ```yaml
 name: Nimbus Deploy
@@ -26,6 +29,7 @@ jobs:
           api-key: ${{ secrets.NIMBUS_API_KEY }}
           nimbus-server: ${{ secrets.NIMBUS_URL }}
           nimbus-path: nimbus.yaml
+          tag-images: 'false'
 ```
 
 ### With Docker build
@@ -139,12 +143,13 @@ any routes.
 | `nimbus-server`   |     N/A       | The URL of the Nimbus server                   |
 | `api-key`         |     N/A       | The API key for the Nimbus project             |
 | `nimbus-path`     | `nimbus.yaml` | The path to the nimbus file in your repository |
+| `tag-images` | `true` | Replace service image tags with the commit SHA; set `false` for prebuilt images |
 
 ## Outputs
 
 | Input          | Description                                |
 | -------------- | ------------------------------------------ |
-| `service-urls` | List of URLs created from the nimbus file |
+| `service-urls` | JSON object mapping service names to arrays of deployed URLs |
 
 ## PR deployment comments
 
@@ -178,3 +183,10 @@ After merging a compatible action release, publish a version such as `v2.1.0`
 and move the floating `v2` tag to that commit. Existing `@v2` callers then receive
 the feature, subject to their token permissions. Merging into `main` alone does
 not update the `v2` tag.
+
+## Integration test
+
+The live test deploys the pinned HTTP echo image with `tag-images: 'false'`, checks
+its HTTPS response, and runs branch cleanup even when deployment or verification
+fails. It uses no database, Redis, persistent volumes, or external-auth placeholders.
+PR-reporting behavior is tested separately against a local mock API.
