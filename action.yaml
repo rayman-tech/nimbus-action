@@ -11,6 +11,10 @@ inputs:
     description: "Path to the nimbus file."
     required: false
     default: "./nimbus.yaml"
+  tag-images:
+    description: "Replace service image tags with the commit SHA. Disable for prebuilt images."
+    required: false
+    default: "true"
   github-token:
     description: "GitHub token for PR deployment comments; requires pull-requests: write."
     required: false
@@ -21,7 +25,7 @@ inputs:
     default: "true"
 outputs:
   service-urls:
-    description: "List of URLs of the services deployed."
+    description: "JSON object mapping service names to arrays of deployed URLs."
 runs:
   using: "docker"
   image: "Dockerfile"
@@ -29,6 +33,7 @@ runs:
     NIMBUS_SERVER: ${{ inputs.nimbus-server }}
     NIMBUS_API_KEY: ${{ inputs.api-key }}
     NIMBUS_PATH: ${{ inputs.nimbus-path }}
+    TAG_IMAGES: ${{ inputs.tag-images }}
     GH_TOKEN: ${{ inputs.github-token }}
     PR_COMMENT: ${{ inputs.pr-comment }}
 branding:

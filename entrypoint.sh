@@ -74,11 +74,19 @@ else
         exit 1
     fi
 
+    # Preserve the real commit for PR reports even when using prebuilt images.
+    COMMIT_ARGS=()
+    case "${TAG_IMAGES:-true}" in
+        true) COMMIT_ARGS=(--form "commit=${DEPLOY_COMMIT}") ;;
+        false) ;;
+        *) echo '::error ::tag-images must be true or false'; exit 1 ;;
+    esac
+
     HTTP_RESPONSE=$(curl --silent --location "${NIMBUS_SERVER}/deploy" --write-out "HTTPSTATUS:%{http_code}" \
         --header "X-Api-Key: ${NIMBUS_API_KEY}" \
         --form "file=@${NIMBUS_PATH}" \
         --form "branch=${BRANCH_NAME}" \
-        --form "commit=${DEPLOY_COMMIT}")
+        "${COMMIT_ARGS[@]}")
 
     HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTPSTATUS\:.*//g')
     HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
@@ -95,6 +103,10 @@ else
         } >> "$REPORT"
         publish_report
         exit 1
+    fi
+
+    if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+        printf 'service-urls=%s\n' "$(jq -c '.services' <<< "$HTTP_BODY")" >> "$GITHUB_OUTPUT"
     fi
 
     SERVICE_COUNT=$(echo "$HTTP_BODY" | jq -r '.services | length')

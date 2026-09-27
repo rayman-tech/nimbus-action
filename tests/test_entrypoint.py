@@ -67,11 +67,14 @@ class ActionTests(unittest.TestCase):
         self.event = folder / "event.json"
         self.event.write_text(json.dumps({"ref_type": "branch", "ref": "feature/test"}))
         self.summary = folder / "summary.md"
+        self.output = folder / "output"
         self.env = dict(os.environ, GITHUB_EVENT_NAME="push", GITHUB_REF="refs/heads/feature/test",
                         GITHUB_SHA="abc123", GITHUB_REPOSITORY="owner/repo", GITHUB_RUN_ID="42",
                         GITHUB_EVENT_PATH=str(self.event), GITHUB_STEP_SUMMARY=str(self.summary),
+                        GITHUB_OUTPUT=str(self.output),
                         NIMBUS_PATH="nimbus.yaml", NIMBUS_SERVER=f"http://127.0.0.1:{self.server.server_port}",
                         NIMBUS_API_KEY="test-key", GH_TOKEN="test-token", PR_COMMENT="true")
+        self.env.pop("TAG_IMAGES", None)
         self.env["GITHUB_API_URL"] = self.env["NIMBUS_SERVER"]
 
     def run_action(self):
@@ -141,6 +144,32 @@ class ActionTests(unittest.TestCase):
         self.assertEqual(self.run_action().returncode, 0)
         self.assertIn(b"abc123", self.requests[0][2])
         self.assertIn("abc123", self.comments[0]["body"])
+
+    def test_commit_tagging_stays_enabled_by_default(self):
+        self.assertEqual(self.run_action().returncode, 0)
+        self.assertIn(b'name="commit"\r\n\r\nabc123', self.requests[0][2])
+
+    def test_prebuilt_images_omit_commit_without_losing_report_identity(self):
+        self.env["TAG_IMAGES"] = "false"
+        (Path(self.tmp.name) / "nimbus.yaml").write_text(
+            "app: sample\nservices:\n  - name: echo\n    image: hashicorp/http-echo:1.0.0\n")
+        self.assertEqual(self.run_action().returncode, 0)
+        body = self.requests[0][2]
+        self.assertNotIn(b'name="commit"', body)
+        self.assertIn(b'hashicorp/http-echo:1.0.0', body)
+        self.assertIn(b'name="branch"\r\n\r\nfeature/test', body)
+        self.assertIn("abc123", self.comments[0]["body"])
+
+    def test_invalid_tagging_option_does_not_deploy(self):
+        self.env["TAG_IMAGES"] = "typo"
+        self.assertNotEqual(self.run_action().returncode, 0)
+        self.assertFalse(self.requests)
+
+    def test_service_urls_output_is_json(self):
+        self.assertEqual(self.run_action().returncode, 0)
+        key, value = self.output.read_text().strip().split("=", 1)
+        self.assertEqual(key, "service-urls")
+        self.assertEqual(json.loads(value), self.services)
 
     def test_branch_delete_only_cleans_up(self):
         self.env["GITHUB_EVENT_NAME"] = "delete"
